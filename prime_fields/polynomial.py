@@ -2,7 +2,7 @@
 Define the Polynomial class that can be applied to form companion matrices.
 """
 from numbers import Number, Integral
-from primes import Matrix, Element
+from primes import Matrix, Fp
 
 
 class Polynomial:
@@ -40,7 +40,7 @@ class Polynomial:
 
     def __add__(self, other):
         if isinstance(other, Polynomial):
-            common = min(self.degree(), other.degree()) + 1
+            common = min(self.degree, other.degree) + 1
             coefs = tuple(a + b for a, b in zip(self.coefficients,
                                                 other.coefficients))
             coefs += self.coefficients[common:] + other.coefficients[common:]
@@ -56,7 +56,7 @@ class Polynomial:
 
     def __sub__(self, other):
         if isinstance(other, Polynomial):
-            maxi = max(self.degree(), other.degree())+1
+            maxi = max(self.degree, other.degree)+1
             coefs = []
             for i in range(maxi):
                 if i < len(self.coefficients):
@@ -77,7 +77,7 @@ class Polynomial:
 
     def __rsub__(self, other):
         if isinstance(other, Polynomial):
-            maxi = max(self.degree(), other.degree())+1
+            maxi = max(self.degree, other.degree)+1
             coefs = []
             for i in range(maxi):
                 if i < len(self.coefficients):
@@ -100,10 +100,10 @@ class Polynomial:
 
     def __mul__(self, other):
         if isinstance(other, Polynomial):
-            deg = self.degree() + other.degree()
+            deg = self.degree + other.degree
             coefs = [0 for i in range(deg + 1)]
-            for i in range(self.degree() + 1):
-                for j in range(other.degree() + 1):
+            for i in range(self.degree + 1):
+                for j in range(other.degree + 1):
                     coefs[i+j] += self.coefficients[i] * other.coefficients[j]
             return Polynomial(tuple(coefs))
         elif isinstance(other, Number):
@@ -127,16 +127,16 @@ class Polynomial:
     def __call__(self, other):
         if isinstance(other, Number):
             val = 0
-            for i in range(self.degree() + 1):
+            for i in range(self.degree + 1):
                 val += self.coefficients[i] * (other**i)
             return val
         else:
             raise NotImplementedError
 
     def dx(self):
-        if self.degree() >= 1:
+        if self.degree >= 1:
             return Polynomial(tuple(self.coefficients[i]*i
-                                    for i in range(1, self.degree() + 1)))
+                                    for i in range(1, self.degree + 1)))
         else:
             return Polynomial((0,))
 
@@ -145,27 +145,24 @@ def derivative(poly):
     return poly.dx()
 
 
-def companion_matrix(poly):
+def companion_matrix(poly, field=0):
     if not isinstance(poly, Polynomial):
         raise TypeError("Input needs to be a Polynomial"
                         "with at least degree 1.")
-    elif not poly.degree - 1:
+    elif not poly.degree:
         raise ValueError("Polynomial needs to have a degree of at least 1.")
     n = poly.degree
     coefs = [coefficient/poly.coefficients[-1]
              for coefficient in poly.coefficients]
-    coefs.pop()
-    if isinstance(poly.coefficients[0], Element):
-        field = poly.coefficients[0][0].field
-    else:
-        field = 0
     companion = []
     for i in range(n):
         row_vector = [0 for j in range(n)]
         if i:
             row_vector[i - 1] = 1
-        row_vector[-1] = -coefs.pop()
+        row_vector[-1] = -int(coefs.pop(0))
         companion.append(row_vector)
+    if isinstance(field, Integral) and field:
+        field = Fp(field)
     return Matrix(n, companion, field)
 
 
@@ -200,3 +197,10 @@ def _populate_zeroes(matrix, current_size, total_size):
         resulting_rows[i].extend([0 for j in
                                   range(total_size - current_size - rows)])
     return resulting_rows
+
+
+def identity(size, field=0):
+    result = [[0 for i in range(size)] for j in range(size)]
+    for i in range(size):
+        result[i][i] = 1
+    return Matrix(size, result, field)

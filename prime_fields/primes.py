@@ -21,7 +21,12 @@ class Fp:
         return f"{type(self).__name__}({self.prime!r})"
 
     def __eq__(self, other):
-        return self.prime == other.prime
+        if isinstance(other, Integral):
+            return self.prime == other
+        elif isinstance(other, Fp):
+            return self.prime == other.prime
+        else:
+            raise NotImplementedError("Equality has not been implemented.")
 
 
 def make_other_Element(meth):
@@ -205,5 +210,5 @@ def _checkmatrix(self, other):
                         "elements is not a Matrix.")
     elif self.size - other.size:
         raise TypeError("Matrices must be the same size.")
-    elif not self.field or self.field - other.field:
+    elif not self.field or self.field.prime - other.field.prime:
         raise TypeError("Matrices must be defined in the same field.")
