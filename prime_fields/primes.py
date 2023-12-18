@@ -1,7 +1,6 @@
 """
 Define the finite field of prime p elements Fp, to be used in matrix algebra.
 """
-# things to import
 from functools import wraps
 from numbers import Integral
 from sympy import isprime
@@ -20,6 +19,9 @@ class Fp:
 
     def __repr__(self):
         return f"{type(self).__name__}({self.prime!r})"
+
+    def __eq__(self, other):
+        return self.prime == other.prime
 
 
 def make_other_Element(meth):
@@ -99,6 +101,8 @@ def _validate(size, array):
 
 
 def _elementarise(field, array):
+    if not field:
+        return array
     n = len(array)
     for i in range(n):
         for j in range(n):
@@ -118,8 +122,10 @@ def _elementarise(field, array):
 
 class Matrix:
     """Define the square matrix with Element elements in the field Fp."""
-    def __init__(self, field, size, array):
-        if not isinstance(field, Fp):
+    def __init__(self, size, array, field=0):
+        if not field:
+            pass
+        elif not isinstance(field, Fp):
             raise TypeError("Define field using Fp.")
         elif not isinstance(size, Integral):
             raise ValueError("Value of size should be an integer.")
@@ -151,7 +157,7 @@ class Matrix:
             result_matrix.append(list())
             for j in range(self.size):
                 result_matrix[i].append(self.matrix[i][j] + other.matrix[i][j])
-        return Matrix(self.field, self.size, result_matrix)
+        return Matrix(self.size, result_matrix, self.field)
 
     def __radd__(self, other):
         return self + other
@@ -163,25 +169,23 @@ class Matrix:
             result_matrix.append(list())
             for j in range(self.size):
                 result_matrix[i].append(self.matrix[i][j] - other.matrix[i][j])
-        return Matrix(self.field, self.size, result_matrix)
+        return Matrix(self.size, result_matrix, self.field)
 
     def __mul__(self, other):
+        result_matrix = []
         if isinstance(other, Integral):
-            result_matrix = []
             for i in range(self.size):
                 result_matrix.append(list())
                 for j in range(self.size):
                     result_matrix[i].append(self.matrix[i][j] * other)
-            return Matrix(self.field, self.size, result_matrix)
         elif isinstance(other, Matrix):
-            result_matrix = []
             for i in range(self.size):
                 result_matrix.append(list())
                 for j in range(self.size):
                     new_value = sum(self.matrix[i][k] * other.matrix[k][j]
                                     for k in range(self.size))
                     result_matrix[i].append(new_value)
-            return Matrix(self.field, self.size, result_matrix)
+        return Matrix(self.size, result_matrix, self.field)
 
     def __rmul__(self, other):
         return self * other
@@ -201,3 +205,5 @@ def _checkmatrix(self, other):
                         "elements is not a Matrix.")
     elif self.size - other.size:
         raise TypeError("Matrices must be the same size.")
+    elif not self.field or self.field - other.field:
+        raise TypeError("Matrices must be defined in the same field.")
