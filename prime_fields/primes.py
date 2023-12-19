@@ -195,7 +195,7 @@ class Matrix:
             raise TypeError("Exponent must be an integer.")
         result_matrix = self
         for i in range(other - 1):
-            result_matrix *= result_matrix
+            result_matrix *= self
         return result_matrix
 
 
