@@ -95,14 +95,12 @@ class Element:
             raise TypeError("Exponential should be an integer.")
 
 
-def _validate(size, array):
-    if not len(array) is size:
-        return False
-    else:
-        for i in range(size):
-            if not len(array[i]) is size:
-                return False
-        return True
+def _validate(array):
+    size = len(array)
+    for i in range(size):
+        if not len(array[i]) is size:
+            return False
+    return True
 
 
 def _elementarise(field, array):
@@ -127,17 +125,14 @@ def _elementarise(field, array):
 
 class Matrix:
     """Define the square matrix with Element elements in the field Fp."""
-    def __init__(self, size, array, field=0):
+    def __init__(self, array, field=0):
         if not field:
             pass
         elif not isinstance(field, Fp):
             raise TypeError("Define field using Fp.")
-        elif not isinstance(size, Integral):
-            raise ValueError("Value of size should be an integer.")
-        elif not _validate(size, array):
-            raise TypeError("Array does not give a square matrix "
-                            "of the required size.")
-        self.size = size
+        elif not _validate(array):
+            raise TypeError("Array does not give a square matrix.")
+        self.size = len(array)
         self.field = field
         self.matrix = _elementarise(field, array)
 
@@ -162,7 +157,7 @@ class Matrix:
             result_matrix.append(list())
             for j in range(self.size):
                 result_matrix[i].append(self.matrix[i][j] + other.matrix[i][j])
-        return Matrix(self.size, result_matrix, self.field)
+        return Matrix(result_matrix, self.field)
 
     def __radd__(self, other):
         return self + other
@@ -174,7 +169,7 @@ class Matrix:
             result_matrix.append(list())
             for j in range(self.size):
                 result_matrix[i].append(self.matrix[i][j] - other.matrix[i][j])
-        return Matrix(self.size, result_matrix, self.field)
+        return Matrix(result_matrix, self.field)
 
     def __mul__(self, other):
         result_matrix = []
@@ -190,7 +185,7 @@ class Matrix:
                     new_value = sum(self.matrix[i][k] * other.matrix[k][j]
                                     for k in range(self.size))
                     result_matrix[i].append(new_value)
-        return Matrix(self.size, result_matrix, self.field)
+        return Matrix(result_matrix, self.field)
 
     def __rmul__(self, other):
         return self * other

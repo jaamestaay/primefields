@@ -163,7 +163,7 @@ def companion_matrix(poly, field=0):
         companion.append(row_vector)
     if isinstance(field, Integral) and field:
         field = Fp(field)
-    return Matrix(n, companion, field)
+    return Matrix(companion, field)
 
 
 def block_diagonal(square_matrices):
@@ -176,7 +176,7 @@ def block_diagonal(square_matrices):
         blockdiag_matrix.extend(_populate_zeroes(matrix,
                                                  current_size, total_size))
         current_size += matrix.size
-    return Matrix(total_size, blockdiag_matrix, field)
+    return Matrix(blockdiag_matrix, field)
 
 
 def _check_input(square_matrices):
@@ -203,4 +203,4 @@ def identity(size, field=0):
     result = [[0 for i in range(size)] for j in range(size)]
     for i in range(size):
         result[i][i] = 1
-    return Matrix(size, result, field)
+    return Matrix(result, field)
